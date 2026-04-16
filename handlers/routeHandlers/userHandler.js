@@ -130,7 +130,73 @@ user._users.post = (requestObject, callback) => {
   }
 };
 
-user._users.put = (requestObject, callback) => {};
+user._users.put = (requestObject, callback) => {
+  const phone =
+    typeof requestObject.body.phone === "string" &&
+    requestObject.body.phone.trim().length === 11
+      ? requestObject.body.phone
+      : false;
+
+  const firstName =
+    typeof requestObject.body.firstName === "string" &&
+    requestObject.body.firstName.trim().length > 0
+      ? requestObject.body.firstName
+      : false;
+
+  const lastName =
+    typeof requestObject.body.lastName === "string" &&
+    requestObject.body.lastName.trim().length > 0
+      ? requestObject.body.lastName
+      : false;
+
+  const password =
+    typeof requestObject.body.password === "string" &&
+    requestObject.body.password.trim().length > 0
+      ? requestObject.body.password
+      : false;
+
+  // check if phone valid
+  if (phone) {
+    if (firstName || lastName || password) {
+      // check if file exists
+      data.read("users", phone, (err, u) => {
+        const user = { ...parsedJSON(u) };
+        // check
+        if (!err && user) {
+          // edit files name by name
+          if (firstName) user.firstName = firstName;
+          if (lastName) user.lastName = lastName;
+          if (password) user.password = hash(password);
+          // save to database
+          data.update("users", phone, user, (err) => {
+            if (!err) {
+              callback(200, {
+                message: "User data updated successfully!",
+              });
+            } else {
+              callback(500, {
+                message: "User data updating failed.",
+              });
+            }
+          });
+        } else {
+          callback(400, {
+            message: "User doesn't exists.",
+          });
+        }
+      });
+    } else {
+      callback(400, {
+        message: "You have a problem in your request.",
+      });
+    }
+  } else {
+    callback(404, {
+      message: "Invalid phone number. Please try again.",
+    });
+  }
+};
+
 user._users.delete = (requestObject, callback) => {};
 
 // exports
