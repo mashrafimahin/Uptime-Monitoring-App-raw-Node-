@@ -8,7 +8,7 @@
 
 // dependencies
 const data = require("../../lib/data");
-const { hash } = require("../../helpers/utilities");
+const { parsedJSON, hash } = require("../../helpers/utilities");
 
 // module - scaffolding
 const user = {};
@@ -28,8 +28,36 @@ user.userHandler = (requestObject, callback) => {
 
 // methods declaring
 user._users.get = (requestObject, callback) => {
-  callback(200);
+  const phone =
+    typeof requestObject.queryStringObject.phone === "string" &&
+    requestObject.queryStringObject.phone.trim().length === 11
+      ? requestObject.queryStringObject.phone
+      : false;
+
+  // check if user available
+  if (phone) {
+    // lookup the expected user
+    data.read("users", phone, (err, u) => {
+      // valid json parser & copy data from original object
+      const user = { ...parsedJSON(u) };
+      // if exists
+      if (!err && user) {
+        // encrypt password
+        delete user.password;
+        callback(200, user);
+      } else {
+        callback(404, {
+          message: "Requested User Not Found.",
+        });
+      }
+    });
+  } else {
+    callback(404, {
+      message: "Requested User Not Found.",
+    });
+  }
 };
+
 user._users.post = (requestObject, callback) => {
   // validation for required information
   const firstName =
@@ -101,6 +129,7 @@ user._users.post = (requestObject, callback) => {
     });
   }
 };
+
 user._users.put = (requestObject, callback) => {};
 user._users.delete = (requestObject, callback) => {};
 
