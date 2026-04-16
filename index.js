@@ -12,36 +12,36 @@ const { handleReqRes } = require("./helpers/handleReqRes");
 // environment
 const environent = require("./helpers/environments");
 // write data (database style but in local)
-const data = require("./lib/data");
+// const data = require("./lib/data");
 
 // app object - module scaffolding
 const app = {};
 
 // testing file system (writing in database(local))
-data.create("test", "myFile", { name: "Mashrafi", age: 20 }, (err) => {
-  console.log(`error was ${err}`);
-});
+// data.create("test", "myFile", { name: "Mashrafi", age: 20 }, (err) => {
+// console.log(`error was ${err}`);
+// });
 
 // read data from database (local)
-data.read("test", "myFile", (err, result) => console.log(err, result));
+// data.read("test", "myFile", (err, result) => console.log(err, result));
 
 // update data to database (local)
-data.update(
-  "test",
-  "myFile",
-  {
-    name: "Mugdho",
-    age: 15,
-    class: 8,
-    height: 168,
-  },
-  (data) => {
-    console.log(data);
-  },
-);
+// data.update(
+//   "test",
+//   "myFile",
+//   {
+//     name: "Mugdho",
+//     age: 15,
+//     class: 8,
+//     height: 168,
+//   },
+//   (data) => {
+//     console.log(data);
+//   },
+// );
 
 // delete data from database (local)
-data.delete("test", "myFile", (err) => console.log(err));
+// data.delete("test", "myFile", (err) => console.log(err));
 
 // create new server
 app.createServer = () => {
