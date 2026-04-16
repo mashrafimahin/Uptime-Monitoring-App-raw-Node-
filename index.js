@@ -11,9 +11,16 @@ const http = require("http");
 const { handleReqRes } = require("./helpers/handleReqRes");
 // environment
 const environent = require("./helpers/environments");
+// write data (database style but in local)
+const data = require("./lib/data");
 
 // app object - module scaffolding
 const app = {};
+
+// testing file system (writing in database(local))
+data.create("test", "myFile", { name: "Mashrafi", age: 20 }, (err) => {
+  console.log(`error was ${err}`);
+});
 
 // create new server
 app.createServer = () => {
