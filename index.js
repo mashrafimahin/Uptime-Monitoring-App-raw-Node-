@@ -22,6 +22,9 @@ data.create("test", "myFile", { name: "Mashrafi", age: 20 }, (err) => {
   console.log(`error was ${err}`);
 });
 
+// read data from database (local)
+data.read("test", "myFile", (err, result) => console.log(err, result));
+
 // create new server
 app.createServer = () => {
   const server = http.createServer(app.handleReqRes);
