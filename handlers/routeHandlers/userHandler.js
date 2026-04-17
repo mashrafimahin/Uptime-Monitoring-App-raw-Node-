@@ -197,7 +197,35 @@ user._users.put = (requestObject, callback) => {
   }
 };
 
-user._users.delete = (requestObject, callback) => {};
+user._users.delete = (requestObject, callback) => {
+  const phone =
+    typeof requestObject.queryStringObject.phone === "string" &&
+    requestObject.queryStringObject.phone.trim().length === 11
+      ? requestObject.queryStringObject.phone
+      : false;
+
+  // check if validation is passed
+  if (phone) {
+    data.read("users", phone, (err, userData) => {
+      if (!err && userData) {
+        // delete file
+        data.delete("users", phone, (err) => {
+          if (!err) {
+            callback(200, { message: "User deleted successfully!" });
+          } else {
+            callback(500, { message: "User deletion failed." });
+          }
+        });
+      } else {
+        callback(500, { message: "There was a problem in server side." });
+      }
+    });
+  } else {
+    callback(404, {
+      message: "There was a problem in deleting file.",
+    });
+  }
+};
 
 // exports
 module.exports = user;
