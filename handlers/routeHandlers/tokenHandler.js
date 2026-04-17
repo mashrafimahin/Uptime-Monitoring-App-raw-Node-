@@ -68,10 +68,11 @@ handler._token.post = (requestObject, callback) => {
         data.create("tokens", tokenId, tokenObject, (err2) => {
           if (!err2) {
             callback(200, tokenObject);
+          } else {
+            callback(500, {
+              message: "Server Side Crashed.",
+            });
           }
-          callback(500, {
-            message: "Server Side Crashed.",
-          });
         });
       } else {
         callback(400, {
