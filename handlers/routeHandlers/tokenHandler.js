@@ -114,7 +114,48 @@ handler._token.post = (requestObject, callback) => {
   }
 };
 
-handler._token.put = (requestObject, callback) => {};
+handler._token.put = (requestObject, callback) => {
+  const id =
+    typeof requestObject.body.id === "string" &&
+    requestObject.body.id.trim().length === 20
+      ? requestObject.body.id
+      : false;
+
+  const extend =
+    typeof requestObject.body.extend === "boolean" &&
+    requestObject.body.extend === true
+      ? true
+      : false;
+
+  // checking
+  if (id && extend) {
+    data.read("tokens", id, (err, t) => {
+      const tokenData = parsedJSON(t);
+      if (tokenData.expires > Date.now()) {
+        // modify
+        tokenData.expires = Date.now() + 3600 * 1000;
+        // update
+        data.update("tokens", id, tokenData, (err1) => {
+          if (!err1) {
+            callback(200);
+          } else {
+            callback(400, {
+              message: "Having problem with saving data.",
+            });
+          }
+        });
+      } else {
+        callback(400, {
+          message: "Token already expired.",
+        });
+      }
+    });
+  } else {
+    callback(400, {
+      message: "Token not found.",
+    });
+  }
+};
 
 handler._token.delete = (requestObject, callback) => {};
 
