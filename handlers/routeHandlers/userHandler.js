@@ -37,38 +37,24 @@ user._users.get = (requestObject, callback) => {
 
   // check if user available
   if (phone) {
-    // verification
-    let token =
-      typeof requestObject.headersObject.token === "string"
-        ? requestObject.headersObject.token
-        : false;
-
-    tokenHandler._token.verify(token, phone, (tokenId) => {
-      if (tokenId) {
-        // lookup the expected user
-        data.read("users", phone, (err, u) => {
-          // valid json parser & copy data from original object
-          const user = { ...parsedJSON(u) };
-          // if exists
-          if (!err && user) {
-            // encrypt password
-            delete user.password;
-            callback(200, user);
-          } else {
-            callback(404, {
-              message: "Requested User Not Found.",
-            });
-          }
-        });
+    // lookup the expected user
+    data.read("users", phone, (err, u) => {
+      // valid json parser & copy data from original object
+      const user = { ...parsedJSON(u) };
+      // if exists
+      if (!err && user) {
+        // encrypt password
+        delete user.password;
+        callback(200, user);
       } else {
-        callback(403, {
-          message: "Authentication failed.",
+        callback(404, {
+          message: "Requested User Not Found.",
         });
       }
     });
   } else {
-    callback(404, {
-      message: "Requested User Not Found.",
+    callback(403, {
+      message: "Authentication failed.",
     });
   }
 };
@@ -105,58 +91,44 @@ user._users.post = (requestObject, callback) => {
       ? requestObject.body.tosAgree
       : false;
 
-  // authenticate
-  let token =
-    typeof requestObject.headersObject.token === "string"
-      ? requestObject.headersObject.token
-      : false;
+  // regiter new ueser
+  if (firstName && lastName && phone && password && tosAgree) {
+    // check for existing user
+    data.read("users", phone, (err) => {
+      if (err) {
+        // make user object
+        let userObj = {
+          firstName,
+          lastName,
+          phone,
+          password: hash(password),
+          tosAgree,
+        };
 
-  tokenHandler._token.verify(token, phone, (tokenId) => {
-    if (tokenId) {
-      // check condition for next step (adding new user)
-      if (firstName && lastName && phone && password && tosAgree) {
-        // check for existing user
-        data.read("users", phone, (err) => {
-          if (err) {
-            // make user object
-            let userObj = {
-              firstName,
-              lastName,
-              phone,
-              password: hash(password),
-              tosAgree,
-            };
-
-            // store data to database (local)
-            data.create("users", phone, userObj, (error) => {
-              if (!error) {
-                callback(200, {
-                  message: "User created successfully.",
-                });
-              } else {
-                callback(500, {
-                  Error: "Could not create user.",
-                });
-              }
+        // store data to database (local)
+        data.create("users", phone, userObj, (error) => {
+          if (!error) {
+            callback(200, {
+              message: "User created successfully.",
             });
           } else {
-            // User already exists
-            callback(400, {
-              message: "User with this phone number already exists.",
+            callback(500, {
+              Error: "Could not create user.",
             });
           }
         });
       } else {
+        // User already exists
         callback(400, {
-          message: "You have a problem in your request.",
+          message: "User with this phone number already exists.",
         });
       }
-    } else {
-      callback(403, {
-        message: "Authentication failed.",
-      });
-    }
-  });
+    });
+  } else {
+    callback(400, {
+      message: "You have a problem in your request.",
+    });
+  }
 };
 
 user._users.put = (requestObject, callback) => {
