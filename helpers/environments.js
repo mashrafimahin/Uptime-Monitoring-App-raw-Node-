@@ -13,12 +13,14 @@ environments.staging = {
   port: 3000,
   envName: "staging",
   secretKey: "abcdabcdabcd",
+  maxChecks: 5,
 };
 
 environments.production = {
   port: 5000,
   envName: "production",
   secretKey: "xyzxyzxyz",
+  maxChecks: 5,
 };
 
 // detetmine which environment was passed
