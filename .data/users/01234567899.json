@@ -1,7 +1,14 @@
 {
-  "firstName": "Mashrafi",
-  "lastName": "Mahin",
+  "firstName": "Mahin",
+  "lastName": "Developer",
   "phone": "01234567899",
-  "password": "a5f266deb21f53c909155a1679d32e171cfca761150e4c877d4cc11450bc0abb",
-  "tosAgree": true
+  "password": "184fd42445070da6e6089d0750dc85a446a197e83235196cdb7f0eb1316b150b",
+  "tosAgree": true,
+  "checks": [
+    "q01bepktyi7cb19q38yp",
+    "mfpf6fo47z1srgvduyhp",
+    "g5ve0f3xe2iztvvgwyvy",
+    "csd262aiwxvloa1oi431",
+    "77rg8iicsupzwka14wyv"
+  ]
 }
