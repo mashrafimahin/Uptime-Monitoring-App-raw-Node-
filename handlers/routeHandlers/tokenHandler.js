@@ -157,7 +157,35 @@ handler._token.put = (requestObject, callback) => {
   }
 };
 
-handler._token.delete = (requestObject, callback) => {};
+handler._token.delete = (requestObject, callback) => {
+  const id =
+    typeof requestObject.queryStringObject.id === "string" &&
+    requestObject.queryStringObject.id.trim().length === 20
+      ? requestObject.queryStringObject.id
+      : false;
+
+  // check if validation is passed
+  if (id) {
+    data.read("tokens", id, (err, tokenData) => {
+      if (!err && tokenData) {
+        // delete token
+        data.delete("tokens", id, (err) => {
+          if (!err) {
+            callback(200, { message: "Token deleted successfully!" });
+          } else {
+            callback(500, { message: "Token deletion failed." });
+          }
+        });
+      } else {
+        callback(500, { message: "There was a problem in server side." });
+      }
+    });
+  } else {
+    callback(404, {
+      message: "There was a problem in deleting token.",
+    });
+  }
+};
 
 // exports
 module.exports = handler;
