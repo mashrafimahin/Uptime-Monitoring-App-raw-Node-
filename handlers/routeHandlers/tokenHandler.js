@@ -31,7 +31,34 @@ handler.tokenHandler = (requestObject, callback) => {
 };
 
 // methods declaring
-handler._token.get = (requestObject, callback) => {};
+handler._token.get = (requestObject, callback) => {
+  const id =
+    typeof requestObject.queryStringObject.id === "string" &&
+    requestObject.queryStringObject.id.trim().length === 20
+      ? requestObject.queryStringObject.id
+      : false;
+
+  // check if token available
+  if (id) {
+    // lookup the token
+    data.read("tokens", id, (err, t) => {
+      // valid json parser & copy data from original object
+      const token = { ...parsedJSON(t) };
+      // if exists
+      if (!err && token) {
+        callback(200, token);
+      } else {
+        callback(404, {
+          message: "Requested token Not Found.",
+        });
+      }
+    });
+  } else {
+    callback(404, {
+      message: "Token not found.",
+    });
+  }
+};
 
 handler._token.post = (requestObject, callback) => {
   // validation for required information
