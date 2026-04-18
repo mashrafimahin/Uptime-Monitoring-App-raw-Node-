@@ -29,7 +29,51 @@ handler.checkHandler = (requestObject, callback) => {
 };
 
 // methods declaring
-handler._check.get = (requestObject, callback) => {};
+handler._check.get = (requestObject, callback) => {
+  const id =
+    typeof requestObject.queryStringObject.id === "string" &&
+    requestObject.queryStringObject.id.trim().length === 20
+      ? requestObject.queryStringObject.id
+      : false;
+
+  // checking
+  if (id) {
+    // read data
+    data.read("checks", id, (err, cd) => {
+      const checkData = parsedJSON(cd);
+
+      // checking if valid
+      if (!err && checkData) {
+        // auth checking
+        const token =
+          typeof requestObject.headersObject.token === "string"
+            ? requestObject.headersObject.token
+            : false;
+
+        // verify token
+        tokenHandler._token.verify(
+          token,
+          checkData.userPhone,
+          (tokenIsValid) => {
+            if (tokenIsValid) {
+              callback(200, checkData);
+            } else {
+              callback(403, { message: "Authentication Failed." });
+            }
+          },
+        );
+      } else {
+        callback(500, {
+          message: "Information not found.",
+        });
+      }
+    });
+  } else {
+    callback(400, {
+      message: "Problem on request.",
+    });
+  }
+};
 
 handler._check.post = (requestObject, callback) => {
   // validate inputs
