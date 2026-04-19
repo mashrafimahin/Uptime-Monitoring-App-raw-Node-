@@ -1,0 +1,9 @@
+{
+  "id": "ubikbtmuvmktbg8xvqgm",
+  "userPhone": "01234567899",
+  "protocol": "https",
+  "url": "youtube.com",
+  "method": "DELETE",
+  "successCodes": [500, 403],
+  "timeOutSeconds": 3
+}
