@@ -312,7 +312,95 @@ handler._check.put = (requestObject, callback) => {
   }
 };
 
-handler._check.delete = (requestObject, callback) => {};
+handler._check.delete = (requestObject, callback) => {
+  const id =
+    typeof requestObject.queryStringObject.id === "string" &&
+    requestObject.queryStringObject.id.trim().length === 20
+      ? requestObject.queryStringObject.id
+      : false;
+
+  // checking
+  if (id) {
+    // read data
+    data.read("checks", id, (err, cd) => {
+      const checkData = parsedJSON(cd);
+
+      // checking if valid
+      if (!err && checkData) {
+        // auth checking
+        const token =
+          typeof requestObject.headersObject.token === "string"
+            ? requestObject.headersObject.token
+            : false;
+
+        // verify token
+        tokenHandler._token.verify(
+          token,
+          checkData.userPhone,
+          (tokenIsValid) => {
+            if (tokenIsValid) {
+              // delete checks from database (local)
+              data.delete("checks", id, (err) => {
+                if (!err) {
+                  // delete instance of checks from user data
+                  data.read("users", checkData.userPhone, (err, userData) => {
+                    if (!err && userData) {
+                      // user object
+                      let userObject = parsedJSON(userData);
+                      let userChecks =
+                        typeof userObject.checks === "object" &&
+                        userObject.checks instanceof Array
+                          ? userObject.checks
+                          : [];
+
+                      // remove the deleted check id from user data
+                      let checkItemPosition = userChecks.indexOf(id);
+                      if (checkItemPosition > -1) {
+                        userChecks.splice(checkItemPosition, 1);
+                        // resave user data
+                        userObject.checks = userChecks;
+                        data.update(
+                          "users",
+                          userObject.phone,
+                          userObject,
+                          (err) => {
+                            if (!err) {
+                              callback(200);
+                            } else {
+                              callback(500, {
+                                message: "Error on updating data.",
+                              });
+                            }
+                          },
+                        );
+                      } else {
+                        callback(500, { message: "check item not found." });
+                      }
+                    } else {
+                      callback(400, { message: "User not found." });
+                    }
+                  });
+                } else {
+                  callback(500, { message: "Server crashed." });
+                }
+              });
+            } else {
+              callback(403, { message: "Authentication Failed." });
+            }
+          },
+        );
+      } else {
+        callback(500, {
+          message: "Information not found.",
+        });
+      }
+    });
+  } else {
+    callback(400, {
+      message: "Problem on request.",
+    });
+  }
+};
 
 // exports
 module.exports = handler;
