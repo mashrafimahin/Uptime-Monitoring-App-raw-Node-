@@ -203,7 +203,114 @@ handler._check.post = (requestObject, callback) => {
   }
 };
 
-handler._check.put = (requestObject, callback) => {};
+handler._check.put = (requestObject, callback) => {
+  const id =
+    typeof requestObject.body.id === "string" &&
+    requestObject.body.id.trim().length === 20
+      ? requestObject.body.id
+      : false;
+
+  let protocol =
+    typeof requestObject.body.protocol === "string" &&
+    ["http", "https"].indexOf(requestObject.body.protocol) > -1
+      ? requestObject.body.protocol
+      : false;
+
+  let url =
+    typeof requestObject.body.url === "string" &&
+    requestObject.body.url.trim().length > 0
+      ? requestObject.body.url
+      : false;
+
+  let method =
+    typeof requestObject.body.method === "string" &&
+    ["GET", "POST", "PUT", "DELETE"].indexOf(requestObject.body.method) > -1
+      ? requestObject.body.method
+      : false;
+
+  let successCodes =
+    typeof requestObject.body.successCodes === "object" &&
+    requestObject.body.successCodes instanceof Array
+      ? requestObject.body.successCodes
+      : false;
+
+  let timeOutSeconds =
+    typeof requestObject.body.timeOutSeconds === "number" &&
+    requestObject.body.timeOutSeconds % 1 === 0 &&
+    requestObject.body.timeOutSeconds >= 1 &&
+    requestObject.body.timeOutSeconds <= 5
+      ? requestObject.body.timeOutSeconds
+      : false;
+
+  // if id  exists
+  if (id) {
+    if (protocol || url || method || successCodes || timeOutSeconds) {
+      // verify token
+      data.read("checks", id, (err, cd) => {
+        if (!err && cd) {
+          const checkData = parsedJSON(cd);
+          // auth checking
+          const token =
+            typeof requestObject.headersObject.token === "string"
+              ? requestObject.headersObject.token
+              : false;
+
+          // verify token
+          tokenHandler._token.verify(
+            token,
+            checkData.userPhone,
+            (tokenIsValid) => {
+              if (tokenIsValid) {
+                if (protocol) {
+                  checkData.protocol = protocol;
+                }
+                if (url) {
+                  checkData.url = url;
+                }
+                if (method) {
+                  checkData.method = method;
+                }
+                if (successCodes) {
+                  checkData.successCodes = successCodes;
+                }
+                if (timeOutSeconds) {
+                  checkData.timeOutSeconds = timeOutSeconds;
+                }
+
+                // store updated data
+                data.update("checks", id, checkData, (err2) => {
+                  if (!err2) {
+                    callback(200);
+                  } else {
+                    callback(500, {
+                      message: "Updating data failed.",
+                    });
+                  }
+                });
+              } else {
+                callback(403, {
+                  message: "Authentication failed.",
+                });
+              }
+            },
+          );
+        } else {
+          callback(500, {
+            message: "Server crashed.",
+          });
+        }
+      });
+    } else {
+      callback(400, {
+        message: "You must provide at least one field to update.",
+      });
+    }
+  } else {
+    callback(403, {
+      message: "User is not existed.",
+    });
+  }
+};
 
 handler._check.delete = (requestObject, callback) => {};
 
